@@ -1,0 +1,122 @@
+import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+public class LembreteMedicamentosApp extends Application {
+
+    public static class Lembrete {
+        private final StringProperty nome = new SimpleStringProperty();
+        private final StringProperty dosagem = new SimpleStringProperty();
+        private final StringProperty horario = new SimpleStringProperty();
+
+        public Lembrete(String nome, String dosagem, String horario) {
+            setNome(nome);
+            setDosagem(dosagem);
+            setHorario(horario);
+        }
+
+        public String getNome() {
+            return nome.get();
+        }
+
+        public void setNome(String nome) {
+            this.nome.set(nome);
+        }
+
+        public StringProperty nomeProperty() {
+            return nome;
+        }
+
+        public String getDosagem() {
+            return dosagem.get();
+        }
+
+        public void setDosagem(String dosagem) {
+            this.dosagem.set(dosagem);
+        }
+
+        public StringProperty dosagemProperty() {
+            return dosagem;
+        }
+
+        public String getHorario() {
+            return horario.get();
+        }
+
+        public void setHorario(String horario) {
+            this.horario.set(horario);
+        }
+
+        public StringProperty horarioProperty() {
+            return horario;
+        }
+    }
+
+    private TableView<Lembrete> tableView = new TableView<>();
+    private TextField nomeField = new TextField();
+    private TextField dosagemField = new TextField();
+    private TextField horarioField = new TextField();
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Lembrete de Medicamentos");
+
+        // Configuração das colunas da tabela
+        TableColumn<Lembrete, String> nomeColuna = new TableColumn<>("Nome");
+        nomeColuna.setCellValueFactory(param -> param.getValue().nomeProperty());
+
+        TableColumn<Lembrete, String> dosagemColuna = new TableColumn<>("Dosagem");
+        dosagemColuna.setCellValueFactory(param -> param.getValue().dosagemProperty());
+
+        TableColumn<Lembrete, String> horarioColuna = new TableColumn<>("Horário");
+        horarioColuna.setCellValueFactory(param -> param.getValue().horarioProperty());
+
+        tableView.getColumns().addAll(nomeColuna, dosagemColuna, horarioColuna);
+
+        Button adicionarButton = new Button("Adicionar");
+        adicionarButton.setOnAction(event -> adicionarLembrete());
+
+        VBox vbox = new VBox();
+        vbox.getChildren().addAll(
+                new HBox(new Label("Nome: "), nomeField),
+                new HBox(new Label("Dosagem: "), dosagemField),
+                new HBox(new Label("Horário: "), horarioField),
+                adicionarButton,
+                tableView
+        );
+
+        primaryStage.setScene(new Scene(vbox, 300, 400));
+        primaryStage.show();
+    }
+
+    private void adicionarLembrete() {
+        String nome = nomeField.getText();
+        String dosagem = dosagemField.getText();
+        String horario = horarioField.getText();
+
+        if (!nome.isEmpty() && !dosagem.isEmpty() && !horario.isEmpty()) {
+            Lembrete lembrete = new Lembrete(nome, dosagem, horario);
+            tableView.getItems().add(lembrete);
+
+            // Limpar os campos de entrada após adicionar o lembrete
+            nomeField.clear();
+            dosagemField.clear();
+            horarioField.clear();
+        } else {
+            // Exibir uma mensagem de erro se algum campo estiver vazio
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erro");
+            alert.setHeaderText(null);
+            alert.setContentText("Por favor, preencha todos os campos.");
+            alert.showAndWait();
+        }
+    }
+}
