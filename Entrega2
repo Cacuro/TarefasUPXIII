@@ -1,0 +1,89 @@
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class InterfaceGrafica {
+    private JFrame frame;
+    private JTextField nomePacienteField;
+    private JTextField idadePacienteField;
+    private JTextField nomeMedicamentoField;
+    private JTextField dosagemMedicamentoField;
+
+    public InterfaceGrafica() {
+        frame = new JFrame("Aplicativo de Lembrete de Medicamentos");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        
+        JPanel panel = new JPanel();
+        frame.add(panel);
+        placeComponents(panel);
+        
+        frame.setVisible(true);
+    }
+
+    private void placeComponents(JPanel panel) {
+        panel.setLayout(null);
+
+        JLabel nomePacienteLabel = new JLabel("Nome do Paciente:");
+        nomePacienteLabel.setBounds(20, 20, 150, 25);
+        panel.add(nomePacienteLabel);
+
+        nomePacienteField = new JTextField(20);
+        nomePacienteField.setBounds(180, 20, 150, 25);
+        panel.add(nomePacienteField);
+
+        JLabel idadePacienteLabel = new JLabel("Idade do Paciente:");
+        idadePacienteLabel.setBounds(20, 50, 150, 25);
+        panel.add(idadePacienteLabel);
+
+        idadePacienteField = new JTextField(20);
+        idadePacienteField.setBounds(180, 50, 150, 25);
+        panel.add(idadePacienteField);
+
+        JLabel nomeMedicamentoLabel = new JLabel("Nome do Medicamento:");
+        nomeMedicamentoLabel.setBounds(20, 80, 150, 25);
+        panel.add(nomeMedicamentoLabel);
+
+        nomeMedicamentoField = new JTextField(20);
+        nomeMedicamentoField.setBounds(180, 80, 150, 25);
+        panel.add(nomeMedicamentoField);
+
+        JLabel dosagemMedicamentoLabel = new JLabel("Dosagem do Medicamento:");
+        dosagemMedicamentoLabel.setBounds(20, 110, 150, 25);
+        panel.add(dosagemMedicamentoLabel);
+
+        dosagemMedicamentoField = new JTextField(20);
+        dosagemMedicamentoField.setBounds(180, 110, 150, 25);
+        panel.add(dosagemMedicamentoField);
+
+        JButton adicionarButton = new JButton("Adicionar Lembrete");
+        adicionarButton.setBounds(100, 150, 200, 25);
+        panel.add(adicionarButton);
+
+        adicionarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nomePaciente = nomePacienteField.getText();
+                int idadePaciente = Integer.parseInt(idadePacienteField.getText());
+                String nomeMedicamento = nomeMedicamentoField.getText();
+                String dosagemMedicamento = dosagemMedicamentoField.getText();
+
+                Paciente paciente = new Paciente(nomePaciente, idadePaciente);
+                Medicamento medicamento = new Medicamento(nomeMedicamento, dosagemMedicamento);
+
+                // Aqui você pode adicionar lógica para salvar o lembrete de medicamento
+                // por exemplo, adicionar o paciente e o medicamento a uma lista.
+                
+                // Em uma aplicação real, você precisará implementar a lógica de adição
+                // dos lembretes apropriada para seu contexto.
+
+                JOptionPane.showMessageDialog(null, "Lembrete adicionado para " + nomePaciente);
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        new InterfaceGrafica();
+    }
+
+    public class Pac
