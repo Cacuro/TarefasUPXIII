@@ -1,8 +1,15 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class InterfaceGrafica {
     private JFrame frame;
@@ -10,27 +17,31 @@ public class InterfaceGrafica {
     private JTextField idadePacienteField;
     private JTextField nomeMedicamentoField;
     private JTextField dosagemMedicamentoField;
+
+    private Connection conexao;
     private List<Paciente> listaDePacientes;
 
     public InterfaceGrafica() {
+        listaDePacientes = new ArrayList<>();
+
+        conectarAoBancoDeDados();
+
         frame = new JFrame("Aplicativo de Lembrete de Medicamentos");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
-
-        listaDePacientes = new ArrayList<>();
 
         JPanel panel = new JPanel();
         frame.add(panel);
         placeComponents(panel);
 
         // Configurar o timer para verificar os lembretes a cada dia (86400000 milissegundos = 24 horas)
-        Timer timer = new Timer(86400000, new ActionListener() {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void run() {
                 verificarLembretesDiarios();
             }
-        });
-        timer.start();
+        }, 0, 86400000);
 
         frame.setVisible(true);
     }
@@ -40,14 +51,49 @@ public class InterfaceGrafica {
         // ...
     }
 
+    private void conectarAoBancoDeDados() {
+        try {
+            conexao = DriverManager.getConnection("jdbc:sqlite:lembretes.db");
+            criarTabelas();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void criarTabelas() {
+        String sqlPacientes = "CREATE TABLE IF NOT EXISTS pacientes (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "nome TEXT NOT NULL," +
+                "idade INTEGER NOT NULL)";
+
+        String sqlMedicamentos = "CREATE TABLE IF NOT EXISTS medicamentos (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "paciente_id INTEGER," +
+                "nome TEXT NOT NULL," +
+                "dosagem TEXT NOT NULL," +
+                "FOREIGN KEY(paciente_id) REFERENCES pacientes(id))";
+
+        try {
+            PreparedStatement statementPacientes = conexao.prepareStatement(sqlPacientes);
+            statementPacientes.execute();
+
+            PreparedStatement statementMedicamentos = conexao.prepareStatement(sqlMedicamentos);
+            statementMedicamentos.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void verificarLembretesDiarios() {
+        LocalDate hoje = LocalDate.now();
         for (Paciente paciente : listaDePacientes) {
             List<Medicamento> medicamentos = paciente.getMedicamentos();
-            StringBuilder mensagem = new StringBuilder("Lembrete diário para " + paciente.getNome() + ":\n");
             for (Medicamento medicamento : medicamentos) {
-                mensagem.append(" - ").append(medicamento.getNome()).append(": ").append(medicamento.getDosagem()).append("\n");
+                if (medicamento.getDiaLembrete().isEqual(hoje)) {
+                    exibirAlertaDiario(paciente.getNome() + ": Tome o medicamento " + medicamento.getNome() +
+                            " (" + medicamento.getDosagem() + ")");
+                }
             }
-            exibirAlertaDiario(mensagem.toString());
         }
     }
 
@@ -55,49 +101,60 @@ public class InterfaceGrafica {
         JOptionPane.showMessageDialog(null, mensagem, "Lembrete Diário", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    private boolean validarEntrada() {
+        // Implemente a validação de entrada aqui, por exemplo, verificar se a idade é um número inteiro.
+        return true; // Retorne true se a entrada for válida, caso contrário, false.
+    }
+
+    private void adicionarPaciente() {
+        // Implemente a adição de paciente à listaDePacientes e ao banco de dados
+        // ...
+    }
+
+    private void adicionarMedicamento(Paciente paciente) {
+        // Implemente a adição de medicamento a um paciente e ao banco de dados
+        // ...
+    }
+
     public static void main(String[] args) {
-        new InterfaceGrafica();
+        SwingUtilities.invokeLater(() -> {
+            new InterfaceGrafica();
+        });
     }
 
     public class Paciente {
+        private int id;
         private String nome;
         private int idade;
         private List<Medicamento> medicamentos;
 
-        public Paciente(String nome, int idade) {
+        public Paciente(int id, String nome, int idade) {
+            this.id = id;
             this.nome = nome;
             this.idade = idade;
             this.medicamentos = new ArrayList<>();
         }
 
-        public void adicionarMedicamento(Medicamento medicamento) {
-            medicamentos.add(medicamento);
-        }
+        // Métodos getter e setter para id, nome e idade
 
         public List<Medicamento> getMedicamentos() {
             return medicamentos;
         }
-
-        public String getNome() {
-            return nome;
-        }
     }
 
     public class Medicamento {
+        private int id;
         private String nome;
         private String dosagem;
+        private LocalDate diaLembrete;
 
-        public Medicamento(String nome, String dosagem) {
+        public Medicamento(int id, String nome, String dosagem, LocalDate diaLembrete) {
+            this.id = id;
             this.nome = nome;
             this.dosagem = dosagem;
+            this.diaLembrete = diaLembrete;
         }
 
-        public String getNome() {
-            return nome;
-        }
-
-        public String getDosagem() {
-            return dosagem;
-        }
+        // Métodos getter e setter para id, nome, dosagem e diaLembrete
     }
 }
